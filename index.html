@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coderch — Intranet</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Coderch<span class="dot">.</span></div>
+    <nav>
+      <a href="#dashboards">Dashboards</a>
+      <a href="https://github.com/jpcoderch/coderch-site" target="_blank" rel="noopener">Repo</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Intranet personal</h1>
+      <p>Panel privado con dashboards, herramientas y notas. Mantenido y desplegado automáticamente.</p>
+    </section>
+
+    <section id="dashboards" class="section">
+      <h2>Dashboards</h2>
+      <div id="grid" class="grid"></div>
+      <p id="empty-state" class="empty-state" hidden>Todavía no hay dashboards cargados. Se agregan editando <code>dashboards.json</code>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span id="updated"></span>
+  </footer>
+
+  <script>
+    fetch('dashboards.json?_=' + Date.now())
+      .then(r => r.json())
+      .then(items => {
+        const grid = document.getElementById('grid');
+        const empty = document.getElementById('empty-state');
+        if (!items.length) { empty.hidden = false; return; }
+        items.forEach(item => {
+          const card = document.createElement('a');
+          card.className = 'card';
+          card.href = item.url;
+          card.innerHTML = `
+            <h3>${item.name}</h3>
+            <p>${item.description || ''}</p>
+            <span class="tag">${item.tag || 'dashboard'}</span>
+          `;
+          grid.appendChild(card);
+        });
+      })
+      .catch(() => { document.getElementById('empty-state').hidden = false; });
+
+    document.getElementById('updated').textContent =
+      'Última actualización: ' + new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' });
+  </script>
+</body>
+</html>
