@@ -26,11 +26,15 @@ body {
 }
 
 .brand {
-  font-weight: 700;
-  font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
 }
 
-.brand .dot { color: var(--accent); }
+.brand-logo {
+  height: 24px;
+  width: auto;
+  display: block;
+}
 
 nav a {
   color: var(--muted);
