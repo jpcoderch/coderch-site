@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "name": "Control Tower",
+    "description": "Torre de control de fulfillment omnicanal: inventario, WMS, OMS, shipping, PO, catálogo y forecasting con IA.",
+    "url": "dashboards/control-tower.html",
+    "tag": "ops"
+  }
+]

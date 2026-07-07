@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omnichannel Fulfillment Control Tower</title>
+  <style>
+:root {
+  --bg: #0a0e1a; --card-bg: #131829; --card-border: #1e2640;
+  --text: #e8eaf0; --text-muted: #8892a8; --accent: #3b82f6;
+  --green: #22c55e; --orange: #f59e0b; --red: #ef4444;
+  --purple: #a855f7; --cyan: #06b6d4; --pink: #ec4899;
+  --teal: #14b8a6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+.header { text-align: center; padding: 40px 20px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header p { color: var(--text-muted); margin-top: 8px; font-size: 14px; max-width: 700px; margin-left: auto; margin-right: auto; }
+.hub-container { position: relative; width: 760px; height: 760px; margin: 20px auto; }
+.hub-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, #1e3a8a 0%, #0a0e1a 80%); border: 2px solid var(--accent); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: box-shadow .3s; }
+.hub-center:hover { box-shadow: 0 0 40px #3b82f644; }
+.hub-center .icon { font-size: 36px; margin-bottom: 6px; }
+.hub-center .label { font-size: 13px; font-weight: 600; text-align: center; line-height: 1.3; }
+.node { position: absolute; width: 130px; height: 130px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform .25s, box-shadow .25s; z-index: 5; text-align: center; border: 2px solid; }
+.node:hover { transform: scale(1.12); z-index: 20; }
+.node .icon { font-size: 28px; margin-bottom: 4px; }
+.node .label { font-size: 11px; font-weight: 600; line-height: 1.2; padding: 0 6px; }
+.connector { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.connector line { stroke-dasharray: 6 4; animation: dash 20s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -200; } }
+.detail-overlay { position: fixed; inset: 0; background: #0008; z-index: 100; display: none; align-items: center; justify-content: center; }
+.detail-overlay.active { display: flex; }
+.detail-panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; width: 90%; max-width: 640px; max-height: 85vh; overflow-y: auto; padding: 32px; position: relative; animation: slideUp .3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.detail-panel .close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
+.detail-panel h2 { font-size: 22px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.detail-panel .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+.section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin: 20px 0 10px; }
+.pill-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.pill.process { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f633; }
+.pill.vendor { background: #a855f722; color: #c084fc; border: 1px solid #a855f733; }
+.pill.tech { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e33; }
+.integration-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #1a2035; border-radius: 10px; margin-bottom: 6px; font-size: 13px; }
+.integration-bar .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.grid-section { max-width: 1100px; margin: 40px auto; padding: 0 20px 60px; }
+.grid-section h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; text-align: center; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.grid-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; transition: border-color .2s; }
+.grid-card:hover { border-color: var(--accent); }
+.grid-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.grid-card ul { list-style: none; padding: 0; }
+.grid-card li { font-size: 13px; color: var(--text-muted); padding: 4px 0; padding-left: 16px; position: relative; }
+.grid-card li::before { content: ''; position: absolute; left: 0; top: 10px; width: 6px; height: 6px; border-radius: 50%; }
+.legend { display: flex; gap: 24px; justify-content: center; margin: 20px 0 10px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+@media (max-width: 800px) {
+  .hub-container { transform: scale(0.55); margin: -100px auto; }
+  .grid { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Omnichannel Fulfillment Data Control Tower</h1>
+    <p>A centralized visibility hub integrating 7 core systems across inventory, warehousing, ordering, shipping, procurement, catalog, and AI forecasting. Click any node to explore processes, vendors, and integration details.</p>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#60a5fa"></span> Processes</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#c084fc"></span> Vendors</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#4ade80"></span> Integration Tech</div>
+  </div>
+  <div class="hub-container" id="hub">
+    <svg class="connector" id="connectors" viewBox="0 0 760 760"></svg>
+    <div class="hub-center" onclick="document.getElementById('tower-section').scrollIntoView({behavior:'smooth'})">
+      <span class="icon">&#127956;</span>
+      <span class="label">Data Control<br>Tower</span>
+    </div>
+  </div>
+  <div class="detail-overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
+    <div class="detail-panel" id="detail-panel">
+      <button class="close" onclick="closeDetail()">&#10005;</button>
+      <h2><span class="detail-icon"></span> <span class="detail-title"></span></h2>
+      <p class="subtitle detail-subtitle"></p>
+      <div class="section-title">Key Processes</div>
+      <div class="pill-list proc-list"></div>
+      <div class="section-title">Leading Vendors</div>
+      <div class="pill-list vendor-list"></div>
+      <div class="section-title">Integration Channels</div>
+      <div class="int-list"></div>
+    </div>
+  </div>
+  <div class="grid-section" id="tower-section">
+    <h2>Integration Technologies That Connect These Systems</h2>
+    <div class="grid">
+      <div class="grid-card">
+        <h3>&#128279; EDI (Electronic Data Interchange)</h3>
+        <ul>
+          <li>EDI 846 — Inventory Inquiry/Advice</li>
+          <li>EDI 856 — Advance Ship Notice</li>
+          <li>EDI 850/855 — Purchase Order / Acknowledgment</li>
+          <li>EDI 214 — Shipment Status</li>
+          <li>EDI 810 — Invoice</li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Standards: ANSI X12, EDIFACT. Used by legacy retailers and enterprise supply chains.</p>
+      </div>
+      <div class="grid-card">
+        <h3>&#9889; Event Streaming</h3>
+        <ul>
+          <li>Apache Kafka — high-throughput order and inventory events</li>
+          <li>RabbitMQ — lightweight async messaging</li>
+          <li>AWS EventBridge — cloud-native event bus</li>
+          <li>Google Pub/Sub — real-time event distribution</li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Powers real-time ATP, order routing, and inventory sync across nodes.</p>
+      </div>
+      <div class="grid-card">
+        <h3>&#128260; iPaaS and Middleware</h3>
+        <ul>
+          <li>MuleSoft — enterprise API management</li>
+          <li>Celigo — e-commerce focused integration</li>
+          <li>Boomi — low-code integration platform</li>
+          <li>Workato — workflow automation</li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Orchestrates data flows between SaaS systems that lack native connectors.</p>
+      </div>
+      <div class="grid-card">
+        <h3>&#128452; Data Warehousing and ETL</h3>
+        <ul>
+          <li>Snowflake / Databricks — centralized analytics layer</li>
+          <li>dbt — transformation and modeling</li>
+          <li>Fivetran / Stitch — ELT connectors</li>
+          <li>Airflow — batch orchestration</li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Aggregates cross-system data for the control tower dashboard and ML models.</p>
+      </div>
+      <div class="grid-card">
+        <h3>&#127760; REST and Webhook APIs</h3>
+        <ul>
+          <li>Shopify, Amazon, WooCommerce marketplace APIs</li>
+          <li>Carrier APIs — FedEx, UPS, USPS, DHL</li>
+          <li>Payment gateway APIs — Stripe, Adyen</li>
+          <li>Webhook callbacks for real-time status updates</li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">The primary integration pattern for modern SaaS-to-SaaS connectivity.</p>
+      </div>
+      <div class="grid-card">
+        <h3>&#129302; AI and ML Infrastructure</h3>
+        <ul>
+          <li>TensorFlow / PyTorch — demand forecasting models</li>
+          <li>Feature stores (Feast, Tecton) — real-time feature serving</li>
+          <li>MLflow — model versioning and deployment</li>
+          <li>Vector DBs — product similarity and recommendation</li>
+        </ul>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Underpins AI-driven forecasting, dynamic pricing, and intelligent order routing.</p>
+      </div>
+    </div>
+  </div>
+  <script>
+const SYSTEMS = [
+  { id:'inv', label:'Inventory\nManagement', icon:'\u{1F4E6}', color:'#3b82f6', angle:0,
+    processes:['Stock level tracking','Safety stock calculation','ABC classification','Cycle counting','Multi-location sync','Dead stock identification'],
+    vendors:['NetSuite (Oracle)','SAP S/4HANA','TradeGecko (QuickBooks)','Cin7','Fishbowl'],
+    companyType:'Retailers, Distributors, Manufacturers — anyone holding physical goods across multiple locations',
+    integrations:[{to:'WMS',label:'Stock updates via EDI 846 / REST APIs',color:'#22c55e'},{to:'OMS',label:'ATP feeds via message queue (Kafka / RabbitMQ)',color:'#f59e0b'},{to:'Forecasting',label:'Historical demand data via batch ETL',color:'#a855f7'}]},
+  { id:'wms', label:'Warehouse\nManagement', icon:'\u{1F3ED}', color:'#22c55e', angle:51.4,
+    processes:['Receiving and putaway','Pick/pack/ship','Wave planning','Slotting optimization','Labor management','Returns processing'],
+    vendors:['Manhattan Associates','Blue Yonder (JDA)','Korber (HighJump)','Logiwa','ShipHero'],
+    companyType:'3PLs, large retailers, DTC brands with owned fulfillment — anyone running a DC or warehouse operation',
+    integrations:[{to:'Shipping',label:'Ship confirmations via API / ASN (EDI 856)',color:'#06b6d4'},{to:'IMS',label:'Inventory adjustments via real-time events',color:'#3b82f6'},{to:'OMS',label:'Fulfillment status via webhooks',color:'#f59e0b'}]},
+  { id:'forecast', label:'AI Inventory\nForecasting', icon:'\u{1F916}', color:'#a855f7', angle:102.8,
+    processes:['Demand sensing','Seasonal trend modeling','Replenishment triggers','Stockout prediction','Promotion impact analysis','Lead time optimization'],
+    vendors:['RELEX Solutions','Blue Yonder Luminate','o9 Solutions','Logility','Anaplan'],
+    companyType:'Mid-to-large retailers, CPG companies, fashion brands — businesses with seasonal or volatile demand patterns',
+    integrations:[{to:'IMS',label:'Replenishment orders via PO generation API',color:'#3b82f6'},{to:'PO',label:'Auto-generated purchase orders via ERP integration',color:'#ec4899'},{to:'Catalog',label:'Product velocity data via data warehouse sync',color:'#f59e0b'}]},
+  { id:'catalog', label:'Listing and\nCatalog Mgmt', icon:'\u{1F4CB}', color:'#f59e0b', angle:154.2,
+    processes:['Product data enrichment','Channel-specific listing','Digital asset management','Pricing rules engine','Taxonomy management','Content syndication'],
+    vendors:['Salsify','Akeneo','Syndigo','ChannelAdvisor (CommerceHub)','Listing Mirror'],
+    companyType:'Multi-channel sellers, marketplace operators, brands selling on Amazon + Shopify + DTC simultaneously',
+    integrations:[{to:'OMS',label:'Product master data via PIM API sync',color:'#ef4444'},{to:'IMS',label:'SKU mapping via middleware (Celigo, MuleSoft)',color:'#3b82f6'},{to:'Forecasting',label:'New product attributes via event stream',color:'#a855f7'}]},
+  { id:'oms', label:'Order\nManagement', icon:'\u{1F6D2}', color:'#ef4444', angle:205.6,
+    processes:['Order orchestration','Split shipment logic','BOPIS / curbside','Fraud screening','Payment capture','Customer communication'],
+    vendors:['Fluent Commerce','Sterling OMS (IBM)','Kibo Commerce','Fabric','Shopify Plus'],
+    companyType:'Omnichannel retailers, DTC brands, marketplaces — the central nervous system for any multi-channel seller',
+    integrations:[{to:'WMS',label:'Fulfillment requests via order routing engine',color:'#22c55e'},{to:'Shipping',label:'Rate shopping and label generation via carrier APIs',color:'#06b6d4'},{to:'IMS',label:'Inventory reservation via ATP service',color:'#3b82f6'}]},
+  { id:'ship', label:'Shipping\nSoftware', icon:'\u{1F69A}', color:'#06b6d4', angle:257,
+    processes:['Rate shopping','Label generation','Carrier selection','Tracking and notifications','Last-mile optimization','Returns label management'],
+    vendors:['ShipStation','EasyPost','Shippo','Pitney Bowes','FedEx Ship Manager'],
+    companyType:'E-commerce businesses of all sizes, 3PLs, subscription box companies — anyone shipping physical parcels',
+    integrations:[{to:'OMS',label:'Tracking events via webhooks / EDI 214',color:'#ef4444'},{to:'WMS',label:'Manifest data via batch file or API',color:'#22c55e'},{to:'PO',label:'Inbound shipment tracking via ASN',color:'#ec4899'}]},
+  { id:'po', label:'Purchase\nOrders', icon:'\u{1F4DD}', color:'#ec4899', angle:308.4,
+    processes:['Supplier management','PO creation and approval','Goods receipt','Invoice matching (3-way)','Vendor scorecarding','Contract management'],
+    vendors:['SAP Ariba','Coupa','Procurify','Precoro','Oracle Procurement Cloud'],
+    companyType:'Manufacturers, wholesalers, large retailers — businesses managing complex supplier relationships and procurement workflows',
+    integrations:[{to:'IMS',label:'Inbound receipts via GRN posting (EDI 861)',color:'#3b82f6'},{to:'Forecasting',label:'Lead time actuals for model training',color:'#a855f7'},{to:'WMS',label:'Advance shipping notices via EDI 856',color:'#22c55e'}]}
+];
+const ID_MAP={IMS:'inv',WMS:'wms',Forecasting:'forecast',Catalog:'catalog',OMS:'oms',Shipping:'ship',PO:'po'};
+const RADIUS=270;
+function init(){
+  const hub=document.getElementById('hub'),svg=document.getElementById('connectors'),cx=380,cy=380;
+  SYSTEMS.forEach(s=>{
+    const rad=(s.angle-90)*Math.PI/180,x=cx+RADIUS*Math.cos(rad),y=cy+RADIUS*Math.sin(rad);
+    s._x=x;s._y=y;
+    const n=document.createElement('div');n.className='node';
+    n.style.left=(x-65)+'px';n.style.top=(y-65)+'px';
+    n.style.borderColor=s.color;n.style.background=s.color+'18';
+    n.innerHTML='<span class="icon">'+s.icon+'</span><span class="label">'+s.label+'</span>';
+    n.onclick=()=>showDetail(s);n.style.boxShadow='0 0 20px '+s.color+'33';
+    hub.appendChild(n);
+  });
+  SYSTEMS.forEach(s=>{s.integrations.forEach(int=>{
+    const t=SYSTEMS.find(t=>t.id===ID_MAP[int.to]);if(!t)return;
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',s._x);l.setAttribute('y1',s._y);
+    l.setAttribute('x2',t._x);l.setAttribute('y2',t._y);
+    l.setAttribute('stroke',int.color+'55');l.setAttribute('stroke-width','1.5');
+    svg.appendChild(l);
+  });});
+}
+function showDetail(s){
+  const o=document.getElementById('detail-overlay'),p=document.getElementById('detail-panel');
+  p.querySelector('.detail-icon').textContent=s.icon;
+  p.querySelector('.detail-title').textContent=s.label.replace('\n',' ');
+  p.querySelector('.detail-title').style.color=s.color;
+  p.querySelector('.detail-subtitle').textContent=s.companyType;
+  p.querySelector('.proc-list').innerHTML=s.processes.map(x=>'<span class="pill process">'+x+'</span>').join('');
+  p.querySelector('.vendor-list').innerHTML=s.vendors.map(x=>'<span class="pill vendor">'+x+'</span>').join('');
+  p.querySelector('.int-list').innerHTML=s.integrations.map(x=>'<div class="integration-bar"><span class="dot" style="background:'+x.color+'"></span><strong>'+x.to+'</strong>&nbsp;— '+x.label+'</div>').join('');
+  o.classList.add('active');
+}
+function closeDetail(){document.getElementById('detail-overlay').classList.remove('active');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail();});
+document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>
